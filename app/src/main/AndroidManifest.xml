@@ -11,6 +11,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.StudentList">
+
+        <activity
+            android:name=".StudentDetailActivity"
+            android:label="Chi tiết sinh viên" />
+
+        <activity
+            android:name=".AddStudentActivity"
+            android:label="Thêm sinh viên" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"

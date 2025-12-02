@@ -1,6 +1,10 @@
 package com.example.studentlist
 
+import java.io.Serializable
+
 data class Student(
-    var id: String,
-    var name: String
-)
+    var mssv: String,
+    var fullName: String,
+    var phone: String,
+    var address: String
+) : Serializable

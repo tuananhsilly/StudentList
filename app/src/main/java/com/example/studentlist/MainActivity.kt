@@ -1,103 +1,89 @@
 package com.example.studentlist
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
-import android.widget.*
+import android.view.Menu
+import android.view.MenuItem
+import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var etId: EditText
-    private lateinit var etName: EditText
-    private lateinit var btnAdd: Button
-    private lateinit var btnUpdate: Button
-    private lateinit var lv: ListView
+    companion object {
+        const val REQUEST_ADD = 100
+        const val REQUEST_EDIT = 101
 
+        const val EXTRA_STUDENT = "extra_student"
+        const val EXTRA_POSITION = "extra_position"
+    }
+
+    private lateinit var lvStudents: ListView
     private lateinit var adapter: StudentAdapter
     private val students = mutableListOf<Student>()
-
-    private var selectedIndex = -1   // index of selected student
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        etId = findViewById(R.id.etId)
-        etName = findViewById(R.id.etName)
-        btnAdd = findViewById(R.id.btnAdd)
-        btnUpdate = findViewById(R.id.btnUpdate)
-        lv = findViewById(R.id.lvStudents)
+        lvStudents = findViewById(R.id.lvStudents)
 
-        // Adapter CHUẨN – dùng Student list
-        adapter = StudentAdapter(this, students) { student ->
-            students.remove(student)
-            adapter.notifyDataSetChanged()
-        }
-        lv.adapter = adapter
+        // Dữ liệu mẫu ban đầu (có thể bỏ nếu bạn đã load từ nơi khác)
+        students.add(Student("SV001", "Nguyễn Văn A", "0123456789", "Hà Nội"))
+        students.add(Student("SV002", "Trần Thị B", "0987654321", "Hải Phòng"))
 
-        // ----------------------
-        // ADD
-        // ----------------------
-        btnAdd.setOnClickListener {
-            val id = etId.text.toString()
-            val name = etName.text.toString()
+        adapter = StudentAdapter(this, students)
+        lvStudents.adapter = adapter
 
-            if (id.isBlank() || name.isBlank()) {
-                Toast.makeText(this, "Please enter ID & Name", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            students.add(Student(id, name))
-            adapter.notifyDataSetChanged()
-            clearInput()
-        }
-
-        // ----------------------
-        // SELECT TO EDIT
-        // ----------------------
-        lv.setOnItemClickListener { _, _, position, _ ->
-            val s = students[position]
-            etId.setText(s.id)
-            etName.setText(s.name)
-            selectedIndex = position
-        }
-
-        // ----------------------
-        // UPDATE
-        // ----------------------
-        btnUpdate.setOnClickListener {
-            if (selectedIndex == -1) {
-                Toast.makeText(this, "Please select a student first", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            val newId = etId.text.toString()
-            val newName = etName.text.toString()
-
-            if (newId.isBlank() || newName.isBlank()) {
-                Toast.makeText(this, "Enter ID & Name", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            students[selectedIndex].id = newId
-            students[selectedIndex].name = newName
-
-            adapter.notifyDataSetChanged()
-            clearInput()
-            selectedIndex = -1
-        }
-
-        // ----------------------
-        // DELETE (Long press row)
-        // ----------------------
-        lv.setOnItemLongClickListener { _, _, position, _ ->
-            students.removeAt(position)
-            adapter.notifyDataSetChanged()
-            true
+        // Nhấn vào 1 sinh viên -> mở màn hình chi tiết
+        lvStudents.setOnItemClickListener { _, _, position, _ ->
+            val intent = Intent(this, StudentDetailActivity::class.java)
+            intent.putExtra(EXTRA_STUDENT, students[position])
+            intent.putExtra(EXTRA_POSITION, position)
+            startActivityForResult(intent, REQUEST_EDIT)
         }
     }
 
-    private fun clearInput() {
-        etId.setText("")
-        etName.setText("")
+    // Tạo option menu
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return true
+    }
+
+    // Xử lý chọn item menu
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_add_student -> {
+                val intent = Intent(this, AddStudentActivity::class.java)
+                startActivityForResult(intent, REQUEST_ADD)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    // Nhận kết quả trả về từ AddStudentActivity & StudentDetailActivity
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (resultCode != Activity.RESULT_OK || data == null) return
+
+        when (requestCode) {
+            REQUEST_ADD -> {
+                val newStudent =
+                    data.getSerializableExtra(EXTRA_STUDENT) as? Student ?: return
+                students.add(newStudent)
+                adapter.notifyDataSetChanged()
+            }
+            REQUEST_EDIT -> {
+                val updatedStudent =
+                    data.getSerializableExtra(EXTRA_STUDENT) as? Student ?: return
+                val position = data.getIntExtra(EXTRA_POSITION, -1)
+                if (position in students.indices) {
+                    students[position] = updatedStudent
+                    adapter.notifyDataSetChanged()
+                }
+            }
+        }
     }
 }
