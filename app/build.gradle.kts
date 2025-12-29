@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("kotlin-parcelize")
+    id("androidx.navigation.safeargs.kotlin")
 }
 
 android {
@@ -38,6 +40,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        dataBinding = true
         compose = true
     }
 }
@@ -61,4 +64,19 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+
+    // Navigation Component
+    implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
+    implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
+
+    // ViewModel & LiveData
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
+    implementation("androidx.fragment:fragment-ktx:1.6.2")
+    
+    // Bỏ tất cả Room dependencies:
+    // val roomVersion = "2.6.1"
+    // implementation("androidx.room:room-runtime:$roomVersion")
+    // implementation("androidx.room:room-ktx:$roomVersion")
+    // kapt("androidx.room:room-compiler:$roomVersion")
 }
